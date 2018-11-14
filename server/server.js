@@ -71,7 +71,7 @@ app.delete('/todos/:id', (req, res) => {
 
 app.patch('/todos/:id', (req, res) => {
   var id = req.params.id;
-  var body = req.body;
+  var body = _.pick(req.body, ['text', 'completed', 'completedAt']);
   if(!ObjectID.isValid(id)){
     return res.status(404).send();
   }
@@ -93,6 +93,20 @@ app.patch('/todos/:id', (req, res) => {
       res.send({todo});
   }).catch((err) => {
     res.status(400).send();
+  });
+});
+
+app.post('/users', (req, res) => {
+  var body = _.pick(req.body, ['email', 'password']);
+  var user = new User(body);
+
+  user.save().then(() => {
+    return user.generateAuthToken();
+  }).then((token) => {
+    res.header('x-auth', token).send(user);
+  })
+  .catch((err) => {
+    res.status(400).send(err);
   });
 });
 
